@@ -4,6 +4,7 @@ extern "C"
 {
     extern void pyro_init_thread(void *argument);
     extern void pyro_debug_task(void* argument);
+    extern void pyro_processing_thread(void* argument);
     void start_mission_planer_task(void const *argument)
     {
         xTaskCreate(pyro_init_thread, "pyro_init_thread", 512, nullptr,
