@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-
+#include "pyro_databoard.h"
 #define PYRO_ARM_JOINT_NUM 6
 
 // ==================== 控制模式枚举 ====================
@@ -46,8 +46,9 @@ typedef struct {
 // 描述：数据接收任务产出，写入 DataBoard ID=1，供计算任务读取
 typedef struct {
     PYRO_ArmControlMode_t mode;      // 当前控制模式
-    uint32_t timestamp_ms;           // 指令生成时间戳（用于执行层超时保护）
     PYRO_JointDirectInput_t joint_direct;   // mode = JOINT_DIRECT 时使用
     PYRO_CartesianInput_t cartesian;        // mode = CARTESIAN 时使用
     //后面待扩展
 } PYRO_ArmControlSignal_t;
+
+pyro::databoard global_databoard;

@@ -81,11 +81,13 @@
 		[
 			"add_library",
 			"target_link_libraries",
+			"add_compile_options",
 			"target_sources"
 		],
 		"files" : 
 		[
-			"cmake/stm32cubemx/CMakeLists.txt"
+			"cmake/stm32cubemx/CMakeLists.txt",
+			"CMakeLists.txt"
 		],
 		"nodes" : 
 		[
@@ -105,7 +107,16 @@
 				"parent" : 0
 			},
 			{
+				"file" : 1
+			},
+			{
 				"command" : 2,
+				"file" : 1,
+				"line" : 36,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
 				"file" : 0,
 				"line" : 104,
 				"parent" : 0
@@ -131,6 +142,46 @@
 			[
 				{
 					"fragment" : " -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -gdwarf-5 -mcpu=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -gdwarf-5 -O0 -g3 -std=gnu11"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-mcpu=cortex-m7"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-mthumb"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-mfpu=fpv5-d16"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-mfloat-abi=hard"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-Ofast"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-Wdouble-promotion"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-funsafe-math-optimizations"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-fdata-sections"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-ffunction-sections"
 				}
 			],
 			"defines" : 
@@ -293,145 +344,145 @@
 	"sources" : 
 	[
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Core/Src/system_stm32h7xx.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash_ex.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gpio.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma_ex.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr_ex.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_fdcan.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi_ex.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c",
 			"sourceGroupIndex" : 0
