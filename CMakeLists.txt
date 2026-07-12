@@ -85,13 +85,6 @@ add_executable(${CMAKE_PROJECT_NAME}
         PYRo/Component/Shoot/pyro_shoot_base.cpp
         PYRo/Component/Shoot/pyro_shoot_17mm_control.cpp
         
-        PYRo/Application/Demo/pyro_rc_demo.cpp
-        PYRo/Application/Demo/demo_task.cpp
-        PYRo/Application/Demo/pyro_motor_demo.cpp
-        PYRo/Application/Demo/pyro_control_demo.cpp
-        PYRo/Application/Demo/pyro_controller_demo.cpp
-        PYRo/Application/Demo/pyro_shoot_demo.cpp
-
         PYRo/Debug/Debug_task.cpp
         PYRo/Debug/VOFA/pyro_vofa.cpp
         PYRo/Debug/JCOM/pyro_jcom.cpp
@@ -159,8 +152,6 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
     PYRo/Component/Referee
     PYRo/Component/Powermeter
     PYRo/Component/Powercontrol
-
-    PYRo/Application/Demo
 
     PYRo/Debug/VOFA
 

@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/WorkSpace/OldRobot/engineer/build/Debug/cmake_install.cmake",
+		"D:/WorkSpace/OldRobot/engineer/build/Debug/cmake/stm32cubemx/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
