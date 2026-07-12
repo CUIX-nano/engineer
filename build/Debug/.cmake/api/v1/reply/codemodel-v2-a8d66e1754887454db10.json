@@ -80,21 +80,21 @@
 				{
 					"directoryIndex" : 1,
 					"id" : "FreeRTOS::@768a070a0fe75716b479",
-					"jsonFile" : "target-FreeRTOS-Debug-8ab192fcd81c03afa5e5.json",
+					"jsonFile" : "target-FreeRTOS-Debug-6665900c2d560a74a5a7.json",
 					"name" : "FreeRTOS",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "PYRo::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-PYRo-Debug-97de6cb2be3095ca01aa.json",
+					"jsonFile" : "target-PYRo-Debug-b531b0676009f4035f41.json",
 					"name" : "PYRo",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 1,
 					"id" : "STM32_Drivers::@768a070a0fe75716b479",
-					"jsonFile" : "target-STM32_Drivers-Debug-c1797a026fd586b1a949.json",
+					"jsonFile" : "target-STM32_Drivers-Debug-8495463f6e1e1a0166a2.json",
 					"name" : "STM32_Drivers",
 					"projectIndex" : 0
 				}

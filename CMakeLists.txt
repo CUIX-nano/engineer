@@ -110,6 +110,7 @@ add_executable(${CMAKE_PROJECT_NAME}
         PYRo/Moudle/Chassis/Hybrid/pyro_hybrid_chassis.cpp
 
         PYRo/Application/Mission/pyro_receive_thread.cpp
+        PYro/Application/Mission/pyro_typedef.hpp
         PYro/Application/Mission/pyro_processing_thread.cpp
 
 )
