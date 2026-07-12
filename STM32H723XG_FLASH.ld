@@ -240,6 +240,12 @@ SECTIONS
     . = ALIGN(8);
   } >DTCMRAM
 
+  .dma_heap :
+  {
+    . = ALIGN(4);
+    KEEP(*(.dma_heap))
+    . = ALIGN(4);
+  } >RAM_D2
 
 
   /* Remove information from the standard libraries */

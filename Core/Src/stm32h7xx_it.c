@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2026 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -63,7 +63,6 @@ extern DMA_HandleTypeDef hdma_spi2_tx;
 extern SPI_HandleTypeDef hspi2;
 extern TIM_HandleTypeDef htim1;
 extern DMA_HandleTypeDef hdma_uart5_rx;
-extern DMA_HandleTypeDef hdma_uart5_tx;
 extern DMA_HandleTypeDef hdma_uart7_rx;
 extern DMA_HandleTypeDef hdma_uart7_tx;
 extern DMA_HandleTypeDef hdma_usart1_rx;
@@ -456,20 +455,6 @@ void UART5_IRQHandler(void)
   /* USER CODE BEGIN UART5_IRQn 1 */
 
   /* USER CODE END UART5_IRQn 1 */
-}
-
-/**
-  * @brief This function handles DMA2 stream0 global interrupt.
-  */
-void DMA2_Stream0_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
-
-  /* USER CODE END DMA2_Stream0_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_uart5_tx);
-  /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
-
-  /* USER CODE END DMA2_Stream0_IRQn 1 */
 }
 
 /**
