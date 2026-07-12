@@ -51,4 +51,4 @@ typedef struct {
     //后面待扩展
 } PYRO_ArmControlSignal_t;
 
-pyro::databoard global_databoard;
+extern pyro::databoard global_databoard;

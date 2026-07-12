@@ -1,195 +1,307 @@
 /***************************************************
- * 这个任务用来从串口访问整个databoard
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * CUIJ 调试任务：通过串口访问整个 DataBoard
+ * 指令格式：CUIJ [子命令] [参数...]
+ * 串口：通过 CUIJ_UART_SELECT 宏配置
+ * 全局 DataBoard 为对象：global_databoard（定义在 pyro_typedef.h 中）
  ***************************************************/
-/*
- #include "FreeRTOS.h"
+
+#include "FreeRTOS.h"
 #include "task.h"
-#include "pyro_typedef.hpp"      // 包含 global_databoard 声明
+#include "pyro_typedef.h"          // 包含 global_databoard 定义（对象）
 #include "pyro_databoard.h"
-#include "pyro_uart_drv.h"       // 假设有串口驱动
+#include "pyro_uart_drv.h"
+#include "stm32h7xx_hal_uart.h"    // 直接使用 HAL 接收函数
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
 
-// 外部全局 DataBoard 指针（在 pyro_typedef.hpp 中定义为 extern）
-extern pyro::databoard* global_databoard;
+// ==================== CUIJ 串口配置（修改此处切换串口） ====================
+// 可选值：uart1, uart5, uart7, uart10
+#define CUIJ_UART_SELECT uart1
 
-// 假设的调试串口发送函数（根据实际修改）
-static void debug_send(const char* str) {
-    // 示例：使用 uart1 发送
-    pyro::uart_drv_t::get_instance(pyro::uart_drv_t::uart1)->send((uint8_t*)str, strlen(str));
-}
+// 根据选择自动映射到 HAL 句柄和枚举
+#if (CUIJ_UART_SELECT == uart1)
+    #define CUIJ_UART_HANDLE huart1
+    #define CUIJ_UART_ENUM    pyro::uart_drv_t::uart1
+#elif (CUIJ_UART_SELECT == uart5)
+    #define CUIJ_UART_HANDLE huart5
+    #define CUIJ_UART_ENUM    pyro::uart_drv_t::uart5
+#elif (CUIJ_UART_SELECT == uart7)
+    #define CUIJ_UART_HANDLE huart7
+    #define CUIJ_UART_ENUM    pyro::uart_drv_t::uart7
+#elif (CUIJ_UART_SELECT == uart10)
+    #define CUIJ_UART_HANDLE huart10
+    #define CUIJ_UART_ENUM    pyro::uart_drv_t::uart10
+#else
+    #error "Unsupported CUIJ_UART_SELECT. Choose uart1, uart5, uart7, or uart10."
+#endif
 
-// 获取 topic 类型名称
-static const char* type_name(pyro::data_type_t type) {
-    switch(type) {
-        case pyro::UNSIGNED_INT: return "UINT32";
-        case pyro::SIGNED_INT:   return "INT32";
-        case pyro::FLOAT:        return "FLOAT";
-        default: return "UNKNOWN";
+// 外部引用全局 DataBoard 对象（在 pyro_typedef.h 中定义）
+extern pyro::databoard global_databoard;
+
+// 声明对应的 UART 句柄（由 CubeMX 生成）
+extern UART_HandleTypeDef CUIJ_UART_HANDLE;
+
+// CUIJ 调试串口实例，用于发送
+static pyro::uart_drv_t* cuij_uart = nullptr;
+
+// ==================== 串口收发基础函数 ====================
+
+static void cuij_send(const char* str) {
+    if (cuij_uart) {
+        cuij_uart->write((uint8_t*)str, strlen(str));
     }
 }
 
-// 列出所有话题
-static void cmd_list() {
-    char buf[128];
-    debug_send("ID  | Name                     | Type    | Valid | Timestamp\n");
-    debug_send("----+--------------------------+---------+-------+-----------\n");
-    for (uint32_t id = 1; id <= 48; id++) {
-        // 直接访问 topic 对象（通过 databoard 的私有成员？不能直接访问）
-        // 由于 databoard 不提供直接获取 topic 指针的接口，只能通过 get_topic_id 和 read 来获取信息
-        // 这里需要扩展 databoard 接口，或者我们利用已知的命名规则来读取
-        // 但为了演示，我们假设有一个 databoard 的公开方法：get_topic_info(id, ...)
-        // 实际上，我们可以通过尝试读取来判断是否存在，但无法获取名称和类型。
-        // 所以更合理的是修改 databoard 类添加一个遍历接口，或者我们维护一个外部映射表。
-        // 这里我们做一个简化：只显示通过 get_topic_id 能找到的名称？
-        // 可行方法是：创建一个名称数组，存储每个 ID 对应的名称（在创建时记录）。
-        // 因为这是调试，我们可以在全局维护一个名称映射。
-        // 或者我们直接使用 databoard 的内部数组（但不安全）。
-        // 为了不修改原 databoard，我们换个方式：让调试任务在创建 topic 时也注册名称。
-        // 但更简单：我们只支持按名称操作，list 可以输出已注册的 ID 和名称列表。
-        // 因为 databoard 目前不提供遍历，我们暂时跳过 list 实现，或者扩展 databoard。
-        // 这里我们假设已经扩展了 databoard 接口（如 get_topic_name(id) 和 get_topic_type(id)），
-        // 但实际未提供。建议先不实现 list，或用其他方式。
+// 非阻塞读取一个字符（超时 10ms），返回 -1 表示无数据
+static int cuij_getchar() {
+    uint8_t ch;
+    if (HAL_UART_Receive(&CUIJ_UART_HANDLE, &ch, 1, 10) == HAL_OK) {
+        return ch;
     }
-    debug_send("(List not fully implemented without databoard traversal API)\n");
+    return -1;
 }
 
-// 读取并显示话题值
-static void cmd_read(const char* arg) {
-    uint32_t id;
-    // 尝试作为 ID 解析
-    id = (uint32_t)atoi(arg);
-    if (id == 0 && arg[0] != '0') { // 不是数字，当作名称
-        id = global_databoard->get_topic_id(arg);
-        if (id == 0xFFFFFFFF) {
-            debug_send("Topic not found.\n");
-            return;
-        }
+// ==================== 辅助函数 ====================
+
+static void cuij_format_value(pyro::genenral_data_t* data, char* buf, size_t buf_len) {
+    snprintf(buf, buf_len, "float:%.6f  int:%d  uint:%u",
+             data->data_f, data->data_si, data->data_ui);
+}
+
+// ==================== 命令处理函数 ====================
+
+static void cuij_cmd_help() {
+    cuij_send("Commands:\n"
+              "  CUIJ                     -> OK\n"
+              "  CUIJ READ <topic>        -> print value\n"
+              "  CUIJ WRITE <topic> <val> -> write value\n"
+              "  CUIJ WATCH <topics...>   -> start monitoring (binary)\n"
+              "  CUIJ WATCH CLOSE         -> stop monitoring\n");
+}
+
+static void cuij_cmd_read(const char* topic_name) {
+    uint32_t id = global_databoard.get_topic_id(topic_name);
+    if (id == 0xFFFFFFFF) {
+        cuij_send("Topic not found.\n");
+        return;
     }
-    // 读取数据
     pyro::genenral_data_t data;
     TickType_t timestamp;
-    auto status = global_databoard->read(id, &data, timestamp);
+    auto status = global_databoard.read(id, &data, timestamp);
     if (status == pyro::topic::DATA_INVALID) {
-        debug_send("Topic has no valid data.\n");
+        cuij_send("No valid data yet.\n");
         return;
     } else if (status != pyro::topic::DATA_OK) {
-        debug_send("Read error.\n");
+        cuij_send("Read error.\n");
         return;
     }
-    // 需要获取类型：因为 databoard 未提供获取类型接口，我们只能通过事先知道或从读取中推断？
-    // 实际上 read 不会返回类型，我们只能假设已知类型。
-    // 一个解决方法：让 read 返回类型，或者我们维护一个类型映射。
-    // 同样，这里我们假设有一个 get_topic_type 方法，但未提供。
-    // 为了演示，我们只能根据读取时填写的 union 猜测，但无法准确。
-    // 所以我们需要扩展 databoard 或另外存储类型。
-    // 这里就省略具体打印，仅演示框架。
-    char buf[64];
-    snprintf(buf, sizeof(buf), "Value: %u (as uint32) but type unknown\n", data.data_ui);
-    debug_send(buf);
+    char buf[80];
+    cuij_format_value(&data, buf, sizeof(buf));
+    cuij_send(buf);
+    cuij_send("\n");
 }
 
-// 写入话题
-static void cmd_write(const char* name_or_id, const char* value_str) {
-    uint32_t id;
-    id = (uint32_t)atoi(name_or_id);
-    if (id == 0 && name_or_id[0] != '0') {
-        id = global_databoard->get_topic_id(name_or_id);
-        if (id == 0xFFFFFFFF) {
-            debug_send("Topic not found.\n");
-            return;
-        }
+static void cuij_cmd_write(const char* topic_name, const char* value_str) {
+    uint32_t id = global_databoard.get_topic_id(topic_name);
+    if (id == 0xFFFFFFFF) {
+        cuij_send("Topic not found.\n");
+        return;
     }
-    // 需要知道类型才能正确设置联合体，但无法从 databoard 获取类型。
-    // 所以我们只能尝试按浮点解析，如果失败则按整数。
-    // 更好的方式：创建时记录类型，但这里先略。
     char* endptr;
     float fval = strtof(value_str, &endptr);
     if (*endptr == '\0') {
-        // 是浮点数，但可能类型是整数，我们需根据实际类型转换。
-        // 这里默认按浮点写入（若类型不匹配会报错？）
         pyro::genenral_data_t data;
         data.data_f = fval;
-        auto ret = global_databoard->write_topic(id, data);
-        if (ret == pyro::topic::DATA_OK) debug_send("Write OK.\n");
-        else debug_send("Write failed (maybe type mismatch).\n");
-    } else {
-        // 尝试解析为整数
-        int32_t ival = (int32_t)strtol(value_str, &endptr, 10);
-        if (*endptr == '\0') {
-            pyro::genenral_data_t data;
-            data.data_si = ival; // 假设是有符号，若是无符号需区分。
-            auto ret = global_databoard->write_topic(id, data);
-            if (ret == pyro::topic::DATA_OK) debug_send("Write OK.\n");
-            else debug_send("Write failed.\n");
-        } else {
-            debug_send("Invalid number format.\n");
-        }
+        auto ret = global_databoard.write_topic(id, data);
+        if (ret == pyro::topic::DATA_OK)
+            cuij_send("Write OK.\n");
+        else
+            cuij_send("Write failed (maybe type mismatch).\n");
+        return;
     }
+    int32_t ival = (int32_t)strtol(value_str, &endptr, 10);
+    if (*endptr == '\0') {
+        pyro::genenral_data_t data;
+        data.data_si = ival;
+        auto ret = global_databoard.write_topic(id, data);
+        if (ret == pyro::topic::DATA_OK)
+            cuij_send("Write OK.\n");
+        else
+            cuij_send("Write failed.\n");
+        return;
+    }
+    uint32_t uval = (uint32_t)strtoul(value_str, &endptr, 10);
+    if (*endptr == '\0') {
+        pyro::genenral_data_t data;
+        data.data_ui = uval;
+        auto ret = global_databoard.write_topic(id, data);
+        if (ret == pyro::topic::DATA_OK)
+            cuij_send("Write OK.\n");
+        else
+            cuij_send("Write failed.\n");
+        return;
+    }
+    cuij_send("Invalid number format.\n");
 }
 
-// 命令解析入口
-static void process_line(char* line) {
-    // 移除换行符
-    char* newline = strchr(line, '\n');
-    if (newline) *newline = '\0';
-    newline = strchr(line, '\r');
-    if (newline) *newline = '\0';
+// 监视模式相关
+static bool cuij_watch_enabled = false;
+static uint32_t cuij_watch_ids[10];
+static uint8_t cuij_watch_count = 0;
 
-    // 分割命令
+static void cuij_cmd_watch(const char* arg) {
+    if (!arg) {
+        cuij_send("Missing arguments.\n");
+        return;
+    }
+    if (strcmp(arg, "CLOSE") == 0) {
+        cuij_watch_enabled = false;
+        cuij_watch_count = 0;
+        cuij_send("Watch closed.\n");
+        return;
+    }
+    cuij_watch_count = 0;
+    char* args_copy = strdup(arg);
+    if (!args_copy) {
+        cuij_send("Memory error.\n");
+        return;
+    }
+    char* token = strtok(args_copy, " ");
+    while (token && cuij_watch_count < 10) {
+        uint32_t id = global_databoard.get_topic_id(token);
+        if (id == 0xFFFFFFFF) {
+            cuij_send("Topic not found: ");
+            cuij_send(token);
+            cuij_send("\n");
+            free(args_copy);
+            cuij_watch_count = 0;
+            cuij_watch_enabled = false;
+            return;
+        }
+        cuij_watch_ids[cuij_watch_count++] = id;
+        token = strtok(nullptr, " ");
+    }
+    free(args_copy);
+    if (cuij_watch_count == 0) {
+        cuij_send("No valid topics.\n");
+        cuij_watch_enabled = false;
+        return;
+    }
+    cuij_watch_enabled = true;
+    cuij_send("Watch started.\n");
+}
+
+// ==================== 命令解析入口 ====================
+
+static void cuij_process_line(char* line) {
+    // 去除换行符
+    char* nl = strchr(line, '\n');
+    if (nl) *nl = '\0';
+    nl = strchr(line, '\r');
+    if (nl) *nl = '\0';
+
     char* cmd = strtok(line, " ");
     if (!cmd) return;
 
-    if (strcmp(cmd, "help") == 0) {
-        debug_send("Commands:\n  list\n  read <name|id>\n  write <name|id> <value>\n");
-    } else if (strcmp(cmd, "list") == 0) {
-        cmd_list();
-    } else if (strcmp(cmd, "read") == 0) {
-        char* arg = strtok(nullptr, " ");
-        if (arg) cmd_read(arg);
-        else debug_send("Missing argument.\n");
-    } else if (strcmp(cmd, "write") == 0) {
-        char* arg1 = strtok(nullptr, " ");
-        char* arg2 = strtok(nullptr, " ");
-        if (arg1 && arg2) cmd_write(arg1, arg2);
-        else debug_send("Missing arguments.\n");
-    } else {
-        debug_send("Unknown command. Type 'help'.\n");
+    if (strcmp(cmd, "CUIJ") != 0) {
+        cuij_send("Unknown command. Use 'CUIJ ...'\n");
+        return;
+    }
+
+    char* sub = strtok(nullptr, " ");
+    if (!sub) {
+        cuij_send("OK\n");
+        return;
+    }
+
+    if (strcmp(sub, "READ") == 0) {
+        char* topic = strtok(nullptr, " ");
+        if (topic) cuij_cmd_read(topic);
+        else cuij_send("Missing topic name.\n");
+    }
+    else if (strcmp(sub, "WRITE") == 0) {
+        char* topic = strtok(nullptr, " ");
+        char* val = strtok(nullptr, " ");
+        if (topic && val) cuij_cmd_write(topic, val);
+        else cuij_send("Missing arguments.\n");
+    }
+    else if (strcmp(sub, "WATCH") == 0) {
+        char* rest = strtok(nullptr, "");
+        cuij_cmd_watch(rest);
+    }
+    else if (strcmp(sub, "HELP") == 0) {
+        cuij_cmd_help();
+    }
+    else {
+        cuij_send("Unknown subcommand. Use HELP.\n");
     }
 }
 
-// 调试任务主函数
+// ==================== 监视模式发送函数 ====================
+
+static void cuij_send_watch_packet() {
+    if (cuij_watch_count == 0 || !cuij_watch_enabled)
+        return;
+
+    uint8_t packet[1 + 4*10 + 1];   // 最大 1+40+1
+    uint8_t* p = packet;
+    *p++ = 0xA5;                    // 帧头
+
+    for (uint8_t i = 0; i < cuij_watch_count; i++) {
+        pyro::genenral_data_t data;
+        TickType_t ts;
+        auto status = global_databoard.read(cuij_watch_ids[i], &data, ts);
+        if (status == pyro::topic::DATA_OK) {
+            memcpy(p, &data, 4);
+            p += 4;
+        } else {
+            memset(p, 0, 4);
+            p += 4;
+        }
+    }
+    *p++ = 0x5A;                    // 帧尾
+
+    cuij_uart->write(packet, p - packet);
+}
+
+// ==================== 调试任务主函数（保持名为 pyro_debug_task） ====================
+
 extern "C" void pyro_debug_task(void* argument) {
-    // 假定 UART 已经初始化，使用 UART1 接收中断或轮询
-    // 这里使用简单的轮询读取（示例）
+    // 获取对应 UART 实例（用于发送）
+    cuij_uart = pyro::uart_drv_t::get_instance(CUIJ_UART_ENUM);
+    if (!cuij_uart) {
+        while(1) vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+
     char rx_buffer[128];
     uint16_t idx = 0;
+    TickType_t last_watch_time = 0;
+
+    cuij_send("CUIJ Debug task started. Type 'CUIJ HELP' for commands.\n");
+
     while (1) {
-        // 假设有一个非阻塞读取字符函数，返回 -1 若无数据
-        int ch = debug_uart_getchar(); // 需要实现
+        int ch = cuij_getchar();
         if (ch >= 0) {
             if (ch == '\r' || ch == '\n') {
                 rx_buffer[idx] = '\0';
                 if (idx > 0) {
-                    process_line(rx_buffer);
+                    cuij_process_line(rx_buffer);
                 }
                 idx = 0;
             } else if (idx < sizeof(rx_buffer)-1) {
                 rx_buffer[idx++] = (char)ch;
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(10));
+
+        if (cuij_watch_enabled) {
+            TickType_t now = xTaskGetTickCount();
+            if (now - last_watch_time >= pdMS_TO_TICKS(100)) {
+                cuij_send_watch_packet();
+                last_watch_time = now;
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
-    */
-   //待启用的部分

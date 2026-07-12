@@ -1,9 +1,10 @@
 #include "pyro_can_drv.h"
 #include "pyro_rc_hub.h"
 #include "pyro_dwt_drv.h"
-
+#include "pyro_databoard.h"
 extern "C"
 {
+    pyro::databoard global_databoard;
     pyro::can_drv_t *can1_drv;
     pyro::can_drv_t *can2_drv;
     pyro::can_drv_t *can3_drv;
