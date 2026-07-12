@@ -1,0 +1,62 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label":"build",
+            "dependsOn":[
+                "cmake-config",
+                "ninja-build"
+            ],
+            "group": "build"
+        },
+        {
+            "label":"cmake-config",
+            "type":"shell",
+            "command":"cmake",
+            "args":[
+                "-B",
+                "build",
+                "-G",
+                "Ninja"
+            ],
+            "group":"build"
+        },
+        {
+            "label":"ninja-build",
+            "command":"ninja",
+            "args":[
+                "-C",
+                "build"
+            ]
+        },
+        {
+            "label":"download",
+            "type":"shell",
+            "command":"openocd",
+            "args":[
+                "-f",
+                "stlink.cfg",
+                "-f",
+                "stm32g4x.cfg",
+                "-c",
+                "program ./build/Debug/ESC_G4.elf verify exit reset"
+            ],
+            "group":"build"
+        },
+        {
+            "label":"elf2hex",
+            "type":"shell",
+            "command":"arm-none-eabi-objcopy",
+            "args":[
+                "-O",
+                "ihex",
+                "./build/Debug/ESC_G4.elf",
+                "./build/Debug/ESC_G4.hex"
+            ],
+            "group":"build"
+        }
+    ]
+    
+}

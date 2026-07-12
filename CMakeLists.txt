@@ -109,6 +109,9 @@ add_executable(${CMAKE_PROJECT_NAME}
         PYRo/Algorithm/Kinematics/pyro_kin_hybrid.cpp
         PYRo/Moudle/Chassis/Hybrid/pyro_hybrid_chassis.cpp
 
+        PYRo/Application/Mission/pyro_receive_thread.cpp
+        PYro/Application/Mission/pyro_processing_thread.cpp
+
 )
 
 # Add STM32CubeMX generated sources
