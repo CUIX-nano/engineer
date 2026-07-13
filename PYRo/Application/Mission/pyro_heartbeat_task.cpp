@@ -20,6 +20,6 @@ extern "C" void pyro_heartbeat_task(void *argument) {
 
     while (1) {
         uart->write(send_buf, len);
-        vTaskDelay(pdMS_TO_TICKS(1000));   // 1 秒间隔
+        vTaskDelay(pdMS_TO_TICKS(10000));   // 1 秒间隔
     }
 }

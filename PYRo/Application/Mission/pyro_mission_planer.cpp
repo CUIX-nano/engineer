@@ -11,7 +11,7 @@ extern "C"
         xTaskCreate(pyro_init_thread, "pyro_init_thread", 512, nullptr,
                     configMAX_PRIORITIES - 1, nullptr);
         xTaskCreate(pyro_debug_task, "pyro_debug_task", 512, nullptr,
-                    configMAX_PRIORITIES - 1, nullptr);
+                    1, nullptr);
         xTaskCreate(pyro_processing_thread, "pyro_processing_thread", 512, nullptr,
                     configMAX_PRIORITIES - 1, nullptr);
         //xTaskCreate(pyro_heartbeat_task, "pyro_heartbeat_task", 512, nullptr,
