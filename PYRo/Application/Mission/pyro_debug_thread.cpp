@@ -1,76 +1,72 @@
 /***************************************************
  * CUIJ 调试任务：通过串口访问整个 DataBoard
  * 指令格式：CUIJ [子命令] [参数...]
- * 串口：通过 CUIJ_UART_SELECT 宏配置
+ * 串口：UART10（通过 DMA + 回调接收，已验证发送正常）
  * 全局 DataBoard 为对象：global_databoard（定义在 pyro_typedef.h 中）
  ***************************************************/
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "pyro_typedef.h"          // 包含 global_databoard 定义（对象）
+#include "pyro_typedef.h"
 #include "pyro_databoard.h"
 #include "pyro_uart_drv.h"
-#include "stm32h7xx_hal_uart.h"    // 直接使用 HAL 接收函数
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
 
-// ==================== CUIJ 串口配置（修改此处切换串口） ====================
-// 可选值：uart1, uart5, uart7, uart10
-#define CUIJ_UART_SELECT uart1
-
-// 根据选择自动映射到 HAL 句柄和枚举
-#if (CUIJ_UART_SELECT == uart1)
-    #define CUIJ_UART_HANDLE huart1
-    #define CUIJ_UART_ENUM    pyro::uart_drv_t::uart1
-#elif (CUIJ_UART_SELECT == uart5)
-    #define CUIJ_UART_HANDLE huart5
-    #define CUIJ_UART_ENUM    pyro::uart_drv_t::uart5
-#elif (CUIJ_UART_SELECT == uart7)
-    #define CUIJ_UART_HANDLE huart7
-    #define CUIJ_UART_ENUM    pyro::uart_drv_t::uart7
-#elif (CUIJ_UART_SELECT == uart10)
-    #define CUIJ_UART_HANDLE huart10
-    #define CUIJ_UART_ENUM    pyro::uart_drv_t::uart10
-#else
-    #error "Unsupported CUIJ_UART_SELECT. Choose uart1, uart5, uart7, or uart10."
-#endif
-
-// 外部引用全局 DataBoard 对象（在 pyro_typedef.h 中定义）
+// 外部引用全局 DataBoard 对象
 extern pyro::databoard global_databoard;
 
-// 声明对应的 UART 句柄（由 CubeMX 生成）
-extern UART_HandleTypeDef CUIJ_UART_HANDLE;
-
-// CUIJ 调试串口实例，用于发送
+// CUIJ 调试串口实例
 static pyro::uart_drv_t* cuij_uart = nullptr;
 
-// ==================== 串口收发基础函数 ====================
+// ==================== 环形接收缓冲区 ====================
+#define RX_RING_SIZE 256
+static uint8_t rx_ring[RX_RING_SIZE];
+static volatile uint16_t rx_head = 0;  // 写入位置（由回调更新）
+static volatile uint16_t rx_tail = 0;  // 读取位置（由主循环更新）
 
+// 从环形缓冲区读取一个字节，若无数据返回 -1
+static int cuij_getchar_from_ring() {
+    if (rx_head == rx_tail) return -1;
+    uint8_t ch = rx_ring[rx_tail];
+    rx_tail = (rx_tail + 1) % RX_RING_SIZE;
+    return ch;
+}
+
+// ==================== DMA 接收回调函数（ISR 上下文） ====================
+// 该回调由 UART DMA 空闲中断触发，将接收到的数据存入环形缓冲区
+static bool cuij_rx_callback(uint8_t* data, uint16_t len, BaseType_t xHigherPriorityTaskWoken) {
+    if (len == 0) return false;
+
+    // 将数据逐字节写入环形缓冲区（需防止覆盖）
+    for (uint16_t i = 0; i < len; i++) {
+        uint16_t next_head = (rx_head + 1) % RX_RING_SIZE;
+        if (next_head != rx_tail) {  // 缓冲区未满
+            rx_ring[rx_head] = data[i];
+            rx_head = next_head;
+        } else {
+            // 缓冲区已满，丢弃后续数据（可根据需求增加溢出计数）
+            break;
+        }
+    }
+    return true;  // 消费数据，驱动将切换 DMA 缓冲区
+}
+
+// ==================== 串口发送函数（与之前相同） ====================
 static void cuij_send(const char* str) {
     if (cuij_uart) {
         cuij_uart->write((uint8_t*)str, strlen(str));
     }
 }
 
-// 非阻塞读取一个字符（超时 10ms），返回 -1 表示无数据
-static int cuij_getchar() {
-    uint8_t ch;
-    if (HAL_UART_Receive(&CUIJ_UART_HANDLE, &ch, 1, 10) == HAL_OK) {
-        return ch;
-    }
-    return -1;
-}
-
 // ==================== 辅助函数 ====================
-
 static void cuij_format_value(pyro::genenral_data_t* data, char* buf, size_t buf_len) {
     snprintf(buf, buf_len, "float:%.6f  int:%d  uint:%u",
              data->data_f, data->data_si, data->data_ui);
 }
 
-// ==================== 命令处理函数 ====================
-
+// ==================== 命令处理函数（保持不变） ====================
 static void cuij_cmd_help() {
     cuij_send("Commands:\n"
               "  CUIJ                     -> OK\n"
@@ -145,7 +141,7 @@ static void cuij_cmd_write(const char* topic_name, const char* value_str) {
     cuij_send("Invalid number format.\n");
 }
 
-// 监视模式相关
+// ==================== 监视模式相关（保持不变） ====================
 static bool cuij_watch_enabled = false;
 static uint32_t cuij_watch_ids[10];
 static uint8_t cuij_watch_count = 0;
@@ -192,10 +188,8 @@ static void cuij_cmd_watch(const char* arg) {
     cuij_send("Watch started.\n");
 }
 
-// ==================== 命令解析入口 ====================
-
+// ==================== 命令解析入口（保持不变） ====================
 static void cuij_process_line(char* line) {
-    // 去除换行符
     char* nl = strchr(line, '\n');
     if (nl) *nl = '\0';
     nl = strchr(line, '\r');
@@ -238,15 +232,14 @@ static void cuij_process_line(char* line) {
     }
 }
 
-// ==================== 监视模式发送函数 ====================
-
+// ==================== 监视模式发送函数（保持不变） ====================
 static void cuij_send_watch_packet() {
     if (cuij_watch_count == 0 || !cuij_watch_enabled)
         return;
 
-    uint8_t packet[1 + 4*10 + 1];   // 最大 1+40+1
+    uint8_t packet[1 + 4*10 + 1];
     uint8_t* p = packet;
-    *p++ = 0xA5;                    // 帧头
+    *p++ = 0xA5;
 
     for (uint8_t i = 0; i < cuij_watch_count; i++) {
         pyro::genenral_data_t data;
@@ -260,28 +253,37 @@ static void cuij_send_watch_packet() {
             p += 4;
         }
     }
-    *p++ = 0x5A;                    // 帧尾
+    *p++ = 0x5A;
 
     cuij_uart->write(packet, p - packet);
 }
 
-// ==================== 调试任务主函数（保持名为 pyro_debug_task） ====================
-
+// ==================== 主任务 ====================
 extern "C" void pyro_debug_task(void* argument) {
-    // 获取对应 UART 实例（用于发送）
-    cuij_uart = pyro::uart_drv_t::get_instance(CUIJ_UART_ENUM);
+    // 1. 获取 UART10 实例
+    cuij_uart = pyro::uart_drv_t::get_instance(pyro::uart_drv_t::uart10);
     if (!cuij_uart) {
         while(1) vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
+    // 2. 启用 DMA 接收（如果尚未启用）
+    cuij_uart->enable_rx_dma();
+
+    // 3. 注册接收回调
+    cuij_uart->add_rx_event_callback(cuij_rx_callback, 0xDEADBEEF); // 任意 owner ID
+
+    // 4. 初始化变量
     char rx_buffer[128];
     uint16_t idx = 0;
     TickType_t last_watch_time = 0;
+    TickType_t last_heartbeat_time = 0;
 
     cuij_send("CUIJ Debug task started. Type 'CUIJ HELP' for commands.\n");
 
     while (1) {
-        int ch = cuij_getchar();
+        // 从环形缓冲区读取字符
+        int ch = cuij_getchar_from_ring();
+
         if (ch >= 0) {
             if (ch == '\r' || ch == '\n') {
                 rx_buffer[idx] = '\0';
@@ -294,6 +296,7 @@ extern "C" void pyro_debug_task(void* argument) {
             }
         }
 
+        // 监视模式发送（每 100ms）
         if (cuij_watch_enabled) {
             TickType_t now = xTaskGetTickCount();
             if (now - last_watch_time >= pdMS_TO_TICKS(100)) {
@@ -302,6 +305,18 @@ extern "C" void pyro_debug_task(void* argument) {
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(1));
+        // 心跳：每秒发送一次
+        TickType_t now = xTaskGetTickCount();
+        if (now - last_heartbeat_time >= pdMS_TO_TICKS(1000)) {
+            cuij_send("CUIJ heartbeat\r\n");
+            last_heartbeat_time = now;
+        }
+
+        // 延时：若未收到字符且监视模式关闭，则延时 100ms，否则 1ms
+        if (ch < 0 && !cuij_watch_enabled) {
+            vTaskDelay(pdMS_TO_TICKS(100));
+        } else {
+            vTaskDelay(pdMS_TO_TICKS(1));
+        }
     }
 }

@@ -55,31 +55,47 @@ static inline float clamp(float value, float min_val, float max_val) {
     return value;
 }
 
-// 初始化：获取所有话题 ID（只执行一次）
-static void processing_init() {
-    ctrl_mode_id = global_databoard.get_topic_id(TOPIC_MODE);
-    ctrl_joint_id[0] = global_databoard.get_topic_id(TOPIC_CTRL_JOINT0);
-    ctrl_joint_id[1] = global_databoard.get_topic_id(TOPIC_CTRL_JOINT1);
-    ctrl_joint_id[2] = global_databoard.get_topic_id(TOPIC_CTRL_JOINT2);
-    ctrl_joint_id[3] = global_databoard.get_topic_id(TOPIC_CTRL_JOINT3);
-    ctrl_joint_id[4] = global_databoard.get_topic_id(TOPIC_CTRL_JOINT4);
-    ctrl_joint_id[5] = global_databoard.get_topic_id(TOPIC_CTRL_JOINT5);
-    ctrl_gripper_id = global_databoard.get_topic_id(TOPIC_CTRL_GRIPPER);
+// ==================== 辅助函数：获取或创建话题 ====================
+static uint32_t get_or_create_topic(const char* name, pyro::data_type_t type) {
+    uint32_t id = global_databoard.get_topic_id(name);
+    if (id == 0xFFFFFFFF) {
+        // 话题不存在，尝试创建
+        id = global_databoard.create_topic(name, type);
+        if (id != 0xFFFFFFFF) {
+            // 可在此添加调试打印：cuij_send 等（但需注意循环依赖）
+        }
+    }
+    return id;
+}
 
-    cmd_joint_id[0] = global_databoard.get_topic_id(TOPIC_CMD_JOINT0);
-    cmd_joint_id[1] = global_databoard.get_topic_id(TOPIC_CMD_JOINT1);
-    cmd_joint_id[2] = global_databoard.get_topic_id(TOPIC_CMD_JOINT2);
-    cmd_joint_id[3] = global_databoard.get_topic_id(TOPIC_CMD_JOINT3);
-    cmd_joint_id[4] = global_databoard.get_topic_id(TOPIC_CMD_JOINT4);
-    cmd_joint_id[5] = global_databoard.get_topic_id(TOPIC_CMD_JOINT5);
-    cmd_gripper_id = global_databoard.get_topic_id(TOPIC_CMD_GRIPPER);
+// 初始化：获取所有话题 ID，若不存在则创建
+static void processing_init() {
+    // 模式话题为 UNSIGNED_INT
+    ctrl_mode_id = get_or_create_topic(TOPIC_MODE, pyro::data_type_t::UNSIGNED_INT);
+
+    // 控制输入关节（FLOAT）
+    ctrl_joint_id[0] = get_or_create_topic(TOPIC_CTRL_JOINT0, pyro::data_type_t::FLOAT);
+    ctrl_joint_id[1] = get_or_create_topic(TOPIC_CTRL_JOINT1, pyro::data_type_t::FLOAT);
+    ctrl_joint_id[2] = get_or_create_topic(TOPIC_CTRL_JOINT2, pyro::data_type_t::FLOAT);
+    ctrl_joint_id[3] = get_or_create_topic(TOPIC_CTRL_JOINT3, pyro::data_type_t::FLOAT);
+    ctrl_joint_id[4] = get_or_create_topic(TOPIC_CTRL_JOINT4, pyro::data_type_t::FLOAT);
+    ctrl_joint_id[5] = get_or_create_topic(TOPIC_CTRL_JOINT5, pyro::data_type_t::FLOAT);
+    ctrl_gripper_id = get_or_create_topic(TOPIC_CTRL_GRIPPER, pyro::data_type_t::FLOAT);
+
+    // 执行命令关节（FLOAT）
+    cmd_joint_id[0] = get_or_create_topic(TOPIC_CMD_JOINT0, pyro::data_type_t::FLOAT);
+    cmd_joint_id[1] = get_or_create_topic(TOPIC_CMD_JOINT1, pyro::data_type_t::FLOAT);
+    cmd_joint_id[2] = get_or_create_topic(TOPIC_CMD_JOINT2, pyro::data_type_t::FLOAT);
+    cmd_joint_id[3] = get_or_create_topic(TOPIC_CMD_JOINT3, pyro::data_type_t::FLOAT);
+    cmd_joint_id[4] = get_or_create_topic(TOPIC_CMD_JOINT4, pyro::data_type_t::FLOAT);
+    cmd_joint_id[5] = get_or_create_topic(TOPIC_CMD_JOINT5, pyro::data_type_t::FLOAT);
+    cmd_gripper_id = get_or_create_topic(TOPIC_CMD_GRIPPER, pyro::data_type_t::FLOAT);
 }
 
 extern "C" void pyro_processing_thread(void *argument) {
-    // 等待 DataBoard 完全初始化（话题已创建）
+    // 等待所有话题 ID 有效（创建后立即有效）
     while (1) {
         processing_init();
-        // 检查是否所有 ID 都有效（非 0xFFFFFFFF）
         if (ctrl_mode_id != 0xFFFFFFFF &&
             ctrl_joint_id[0] != 0xFFFFFFFF && ctrl_joint_id[1] != 0xFFFFFFFF &&
             ctrl_joint_id[2] != 0xFFFFFFFF && ctrl_joint_id[3] != 0xFFFFFFFF &&

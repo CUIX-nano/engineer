@@ -5,12 +5,17 @@ extern "C"
     extern void pyro_init_thread(void *argument);
     extern void pyro_debug_task(void* argument);
     extern void pyro_processing_thread(void* argument);
+    //extern void pyro_heartbeat_task(void* argument);
     void start_mission_planer_task(void const *argument)
     {
         xTaskCreate(pyro_init_thread, "pyro_init_thread", 512, nullptr,
                     configMAX_PRIORITIES - 1, nullptr);
-        xTaskCreate(pyro_init_thread, "pyro_debug_task", 512, nullptr,
+        xTaskCreate(pyro_debug_task, "pyro_debug_task", 512, nullptr,
                     configMAX_PRIORITIES - 1, nullptr);
+        xTaskCreate(pyro_processing_thread, "pyro_processing_thread", 512, nullptr,
+                    configMAX_PRIORITIES - 1, nullptr);
+        //xTaskCreate(pyro_heartbeat_task, "pyro_heartbeat_task", 512, nullptr,
+                    //configMAX_PRIORITIES - 1, nullptr);
         vTaskDelete(nullptr);
     }
 }

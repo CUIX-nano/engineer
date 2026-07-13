@@ -106,6 +106,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     PYRo/Application/Mission/pyro_receive_thread.cpp
     PYRo/Application/Mission/pyro_processing_thread.cpp
     PYRo/Application/Mission/pyro_debug_thread.cpp
+    PYRo/Application/Mission/pyro_heartbeat_task.cpp
 
     PYRo/Component/Referee/CRC8_CRC16.c
     PYRo/Component/Referee/fifo.c

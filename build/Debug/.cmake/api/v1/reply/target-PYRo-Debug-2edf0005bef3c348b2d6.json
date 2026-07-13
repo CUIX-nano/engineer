@@ -51,7 +51,7 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 183,
+				"line" : 184,
 				"parent" : 0
 			},
 			{
@@ -63,7 +63,7 @@
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 137,
+				"line" : 138,
 				"parent" : 0
 			},
 			{
@@ -349,8 +349,8 @@
 				34,
 				35,
 				36,
-				40,
-				42,
+				37,
+				41,
 				43,
 				44,
 				45,
@@ -359,7 +359,8 @@
 				48,
 				49,
 				50,
-				51
+				51,
+				52
 			]
 		},
 		{
@@ -594,11 +595,10 @@
 				22,
 				23,
 				24,
-				37,
 				38,
 				39,
-				41,
-				52,
+				40,
+				42,
 				53,
 				54,
 				55,
@@ -610,7 +610,8 @@
 				61,
 				62,
 				63,
-				64
+				64,
+				65
 			]
 		},
 		{
@@ -829,7 +830,7 @@
 			"language" : "ASM",
 			"sourceIndexes" : 
 			[
-				65
+				66
 			]
 		}
 	],
@@ -996,21 +997,21 @@
 				61,
 				62,
 				63,
-				64
+				64,
+				65
 			]
 		},
 		{
 			"name" : "",
 			"sourceIndexes" : 
 			[
-				65
+				66
 			]
 		},
 		{
 			"name" : "Object Libraries",
 			"sourceIndexes" : 
 			[
-				66,
 				67,
 				68,
 				69,
@@ -1043,7 +1044,8 @@
 				96,
 				97,
 				98,
-				99
+				99,
+				100
 			]
 		}
 	],
@@ -1269,6 +1271,12 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "PYRo/Application/Mission/pyro_debug_thread.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "PYRo/Application/Mission/pyro_heartbeat_task.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
