@@ -1,0 +1,1 @@
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/RC/pyro_rc_hub.cpp:19:11:static pyro::rc_drv_t* pyro::rc_hub_t::get_instance(which_rc_t)	16	static

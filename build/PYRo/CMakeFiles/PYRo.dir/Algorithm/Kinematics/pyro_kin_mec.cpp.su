@@ -1,0 +1,4 @@
+D:/Environment/arm-gnu-toolchain-15.2.rel1-mingw-w64-x86_64-arm-none-eabi/arm-none-eabi/include/c++/15.2.1/cmath:245:3:constexpr float std::fabs(float)	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/PYRo/Algorithm/Kinematics/pyro_kin_mec.cpp:8:1:pyro::mecanum_kin_t::mecanum_kin_t(float, float)	32	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/PYRo/Algorithm/Kinematics/pyro_kin_mec.cpp:21:1:pyro::mecanum_kin_t::wheel_speeds_t pyro::mecanum_kin_t::solve(float, float, float, missing_mec_e) const	88	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/PYRo/Algorithm/Kinematics/pyro_kin_mec.cpp:68:6:void pyro::mecanum_kin_t::compute_odometry(const wheel_speeds_t&, float&, float&, float&) const	24	static

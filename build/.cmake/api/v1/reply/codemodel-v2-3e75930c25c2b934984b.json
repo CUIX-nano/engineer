@@ -1,0 +1,241 @@
+{
+	"configurations" : 
+	[
+		{
+			"abstractTargets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "dsppp_lib::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-dsppp_lib-Debug-c424b8a93ad0ce3ab071.json",
+					"name" : "dsppp_lib",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "stm32cubemx::@f71d9e09b1dd82b747ac",
+					"jsonFile" : "target-stm32cubemx-Debug-4532d67c481eb4dfb3be.json",
+					"name" : "stm32cubemx",
+					"projectIndex" : 0
+				}
+			],
+			"directories" : 
+			[
+				{
+					"abstractTargetIndexes" : 
+					[
+						0
+					],
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						3,
+						4,
+						5
+					],
+					"jsonFile" : "directory-.-Debug-f6f22219c74102c3da70.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						4,
+						6
+					]
+				},
+				{
+					"build" : "build_cmsis_dsp",
+					"childIndexes" : 
+					[
+						2
+					],
+					"jsonFile" : "directory-build_cmsis_dsp-Debug-353ac45240ad3fa594ad.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "third_party/CMSIS-DSP"
+				},
+				{
+					"build" : "build_cmsis_dsp/Source",
+					"jsonFile" : "directory-build_cmsis_dsp.Source-Debug-0dcee05fa38445d065ec.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.14"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "third_party/CMSIS-DSP/Source",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						1
+					],
+					"build" : "CubeMX/cmake/stm32cubemx",
+					"jsonFile" : "directory-CubeMX.cmake.stm32cubemx-Debug-d7b2d8cd980cf1de0561.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "CubeMX/cmake/stm32cubemx",
+					"targetIndexes" : 
+					[
+						2,
+						5
+					]
+				},
+				{
+					"build" : "PYRo",
+					"jsonFile" : "directory-PYRo-Debug-8ff9dfdf97e706702c18.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "PYRo",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "robot/engineer",
+					"jsonFile" : "directory-robot.engineer-Debug-74511bbda7e47b2362fb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "robot/engineer",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"abstractTargetIndexes" : 
+					[
+						0,
+						1
+					],
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						3,
+						4,
+						5
+					],
+					"name" : "PYRo_Robot",
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2
+					],
+					"name" : "CMSISDSP",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 2,
+					"id" : "CMSISDSP::@6fccd6f504b9a320e20d",
+					"jsonFile" : "target-CMSISDSP-Debug-110bc488dbd11bf453d6.json",
+					"name" : "CMSISDSP",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "Engineer::@3b4a43d27ad31ac0a50d",
+					"jsonFile" : "target-Engineer-Debug-2a2fa71f75e11eb660da.json",
+					"name" : "Engineer",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "FreeRTOS::@f71d9e09b1dd82b747ac",
+					"jsonFile" : "target-FreeRTOS-Debug-578343cba2303d2aab35.json",
+					"name" : "FreeRTOS",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "PYRo::@709a5620261bfa01bad8",
+					"jsonFile" : "target-PYRo-Debug-38d4e26e1e7ce78995e0.json",
+					"name" : "PYRo",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "PYRo_Robot::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-PYRo_Robot-Debug-7a83ff8466b6697da7e3.json",
+					"name" : "PYRo_Robot",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "STM32_Drivers::@f71d9e09b1dd82b747ac",
+					"jsonFile" : "target-STM32_Drivers-Debug-acfa5a9e691a3faeaa57.json",
+					"name" : "STM32_Drivers",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "echo_robot_id::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-echo_robot_id-Debug-a971d3bb7912e4f31cec.json",
+					"name" : "echo_robot_id",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/WorkSpace/OldRobot/PYRo-engineer-old/build",
+		"source" : "D:/WorkSpace/OldRobot/PYRo-engineer-old"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 9
+	}
+}

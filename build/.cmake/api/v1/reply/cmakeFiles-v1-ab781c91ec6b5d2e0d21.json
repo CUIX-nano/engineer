@@ -1,0 +1,240 @@
+{
+	"inputs" : 
+	[
+		{
+			"path" : "CMakeLists.txt"
+		},
+		{
+			"path" : "CMake/config/pyro_robot_id_config.cmake"
+		},
+		{
+			"path" : "CMake/config/pyro_format.cmake"
+		},
+		{
+			"path" : "CubeMX/cmake/gcc-arm-none-eabi.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/CMakeFiles/4.2.3/CMakeSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeSystemSpecificInitialize.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/CMakeFiles/4.2.3/CMakeCCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/CMakeFiles/4.2.3/CMakeCXXCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/CMakeFiles/4.2.3/CMakeASMCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeSystemSpecificInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeGenericSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeInitializeConfigs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeCInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Compiler/GNU-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Internal/CMakeCLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Internal/CMakeCommonLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeCXXInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Compiler/GNU-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Internal/CMakeCXXLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Internal/CMakeCommonLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/CMakeASMInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Compiler/GNU-ASM.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "D:/Environment/cmake-4.2.3-windows-x86_64/share/cmake-4.2/Modules/Internal/CMakeASMLinkerInformation.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/CMakeLists.txt"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/CMakeLists.txt"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/BasicMathFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/ComplexMathFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/QuaternionMathFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/ControllerFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/FastMathFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/FilteringFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/MatrixFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/StatisticsFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/SupportFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/TransformFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/CommonTables/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/SVMFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/BayesFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/DistanceFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/InterpolationFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/WindowFunctions/Config.cmake"
+		},
+		{
+			"path" : "third_party/CMSIS-DSP/Source/configDsp.cmake"
+		},
+		{
+			"path" : "CubeMX/cmake/stm32cubemx/CMakeLists.txt"
+		},
+		{
+			"path" : "PYRo/CMakeLists.txt"
+		},
+		{
+			"path" : "robot/engineer/CMakeLists.txt"
+		}
+	],
+	"kind" : "cmakeFiles",
+	"paths" : 
+	{
+		"build" : "D:/WorkSpace/OldRobot/PYRo-engineer-old/build",
+		"source" : "D:/WorkSpace/OldRobot/PYRo-engineer-old"
+	},
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 1
+	}
+}

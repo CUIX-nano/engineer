@@ -1,0 +1,9 @@
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:35:9:magazine_control_t::magazine_control_t(pyro::motor_base_t*, pyro::pid_t*, pyro::pid_t*)	24	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:41:14:void magazine_control_t::set_target(float&)	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:94:14:void magazine_control_t::update()	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:108:22:float magazine_control_t::rot_angle_correction_pi(float, float, float, float)	32	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:117:14:void magazine_control_t::control(float)	32	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:134:14:void magazine_control_t::disable_constraint()	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:139:14:void magazine_control_t::set_feedback_pos_offset(float)	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:155:6:bool magazine_rc_solve()	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Chassis/Magazine_mission.cpp:173:17:void magazine_mission(void*)	40	static

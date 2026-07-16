@@ -1,0 +1,41 @@
+{
+	"abstract" : true,
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library"
+		],
+		"files" : 
+		[
+			"CubeMX/cmake/stm32cubemx/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 97,
+				"parent" : 0
+			}
+		]
+	},
+	"codemodelVersion" : 
+	{
+		"major" : 2,
+		"minor" : 9
+	},
+	"id" : "stm32cubemx::@f71d9e09b1dd82b747ac",
+	"name" : "stm32cubemx",
+	"paths" : 
+	{
+		"build" : "CubeMX/cmake/stm32cubemx",
+		"source" : "CubeMX/cmake/stm32cubemx"
+	},
+	"sources" : [],
+	"type" : "INTERFACE_LIBRARY"
+}

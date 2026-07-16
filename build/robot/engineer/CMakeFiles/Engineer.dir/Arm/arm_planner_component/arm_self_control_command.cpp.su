@@ -1,0 +1,6 @@
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Arm/arm_planner_component/arm_self_control_command.cpp:3:1:arm_self_control_command::arm_self_control_command()	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Arm/arm_planner_component/arm_self_control_command.cpp:5:1:arm_self_control_command::~arm_self_control_command()	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Arm/arm_planner_component/arm_self_control_command.cpp:8:6:void arm_self_control_command::bind(pyro::databoard*)	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Arm/arm_planner_component/arm_self_control_command.cpp:20:6:void arm_self_control_command::update(user_command_t&)	24	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Arm/arm_planner_component/arm_self_control_command.cpp:32:6:void arm_self_control_command::get_self_control_command(float*)	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/robot/engineer/Arm/arm_planner_component/arm_self_control_command.cpp:38:9:float* arm_self_control_command::get_self_control_command()	16	static

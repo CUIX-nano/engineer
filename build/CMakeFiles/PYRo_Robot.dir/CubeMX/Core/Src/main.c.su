@@ -1,0 +1,5 @@
+D:/WorkSpace/OldRobot/PYRo-engineer-old/CubeMX/Core/Src/main.c:74:6:Relocate_Vector_And_Code_To_RAM	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/CubeMX/Core/Src/main.c:104:5:main	8	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/CubeMX/Core/Src/main.c:169:6:SystemClock_Config	120	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/CubeMX/Core/Src/main.c:236:6:HAL_TIM_PeriodElapsedCallback	16	static
+D:/WorkSpace/OldRobot/PYRo-engineer-old/CubeMX/Core/Src/main.c:254:6:Error_Handler	4	static

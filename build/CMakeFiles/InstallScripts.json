@@ -1,0 +1,12 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/WorkSpace/OldRobot/PYRo-engineer-old/build/cmake_install.cmake",
+		"D:/WorkSpace/OldRobot/PYRo-engineer-old/build/build_cmsis_dsp/cmake_install.cmake",
+		"D:/WorkSpace/OldRobot/PYRo-engineer-old/build/build_cmsis_dsp/Source/cmake_install.cmake",
+		"D:/WorkSpace/OldRobot/PYRo-engineer-old/build/CubeMX/cmake/stm32cubemx/cmake_install.cmake",
+		"D:/WorkSpace/OldRobot/PYRo-engineer-old/build/PYRo/cmake_install.cmake",
+		"D:/WorkSpace/OldRobot/PYRo-engineer-old/build/robot/engineer/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

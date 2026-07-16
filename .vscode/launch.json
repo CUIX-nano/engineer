@@ -1,0 +1,45 @@
+      
+{
+    "configurations": [
+    {
+    "cwd":"${workspaceRoot}",
+    "type":"cortex-debug",
+    "request":"launch",
+    "name":"openocd-launch",
+    "servertype":"openocd",
+    "configFiles":[
+        "interface/stlink.cfg",
+        "target/stm32H7x.cfg"
+    ],
+    "interface":"swd",
+    "executable":".\\build\\PYRo_Robot.elf",
+    "runToEntryPoint": "main",
+    "svdFile": ".\\STM32H723.svd",
+    "liveWatch": {
+        "enabled": true,
+        "samplesPerSecond": 4
+    }
+        },
+        {
+    "cwd":"${workspaceRoot}",
+    "type":"cortex-debug",
+    "request":"launch",
+    "name":"openocd-launch-stlink",
+    "servertype":"openocd",
+    "configFiles":[
+        "interface/stlink.cfg",
+        "target/stm32H7x.cfg"
+    ],
+    "interface":"swd",
+    "executable":".\\build\\Debug\\PYRo.elf",
+    "runToEntryPoint": "main",
+    "svdFile": ".\\STM32H723.svd",
+    "liveWatch": {
+        "enabled": true,
+        "samplesPerSecond": 4
+    }
+        }
+
+
+    ]
+}
