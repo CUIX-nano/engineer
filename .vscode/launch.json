@@ -24,14 +24,14 @@
     "cwd":"${workspaceRoot}",
     "type":"cortex-debug",
     "request":"launch",
-    "name":"openocd-launch-stlink",
+    "name":"openocd-launch-dap",
     "servertype":"openocd",
     "configFiles":[
-        "interface/stlink.cfg",
+        "interface/cmsis-dap.cfg",
         "target/stm32H7x.cfg"
     ],
     "interface":"swd",
-    "executable":".\\build\\Debug\\PYRo.elf",
+    "executable":".\\build\\PYRo_Robot.elf",
     "runToEntryPoint": "main",
     "svdFile": ".\\STM32H723.svd",
     "liveWatch": {
