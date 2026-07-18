@@ -10,7 +10,7 @@
 
 // 原代码中计算了帧间隔和帧率，未知原因
 // 自控接收串口实例
-static pyro::uart_drv_t* self_control_uart = nullptr;
+static pyro::uart_drv_t* self_control_uart = &pyro::bsp_uart::get_uart7();;
 referee_datalink_frame_t self_control_command;
 extern pyro::databoard global_databoard;
 
@@ -23,17 +23,30 @@ static float alpha = 0.02f;
 
 uint32_t self_axis_id[6];
 
-static bool self_control_callback(uint8_t *buf, uint16_t len,BaseType_t &xHigherPriorityTaskWoken)
+    static bool self_control_callback(uint8_t *buf, uint16_t len, BaseType_t &xHigherPriorityTaskWoken)
 {
-    if( len == sizeof(referee_datalink_frame_t) )
+    uint16_t i = 0;
+    // 遍历缓冲区寻找帧头 0xA5 0x1E
+    for (; i < len - 1; i++)
     {
-        xQueueSendFromISR(self_control_queue, buf,  &xHigherPriorityTaskWoken);
-        return true;
+        if (buf[i] == 0xA5 && buf[i + 1] == 0x1E)
+        {
+            // 从帧头起始位置计算剩余数据长度
+            uint16_t remain_len = len - i;
+            // 判断剩余数据是否足够一整帧
+            if (remain_len >= sizeof(referee_datalink_frame_t))
+            {
+                // buf+i 指向帧头起始的完整数据块，送入队列
+                xQueueSendFromISR(self_control_queue, buf + i, &xHigherPriorityTaskWoken);
+                return true;
+            }
+            // 找到帧头但数据不足一帧，直接返回，等待下一次中断补全数据
+            return false;
+        }
     }
-    else 
-        return false;
+    // 整个缓冲区未找到帧头 0xA5 0x1E
+    return false;
 }
-
 
 extern "C" void self_command_updata_thread(void *arg)
 {
@@ -68,7 +81,7 @@ extern "C" void self_command_updata_thread(void *arg)
 extern "C" void self_control_command_init(void *arg)
 {
     self_control_queue = xQueueCreate(10, sizeof(referee_datalink_frame_t));
-    self_control_uart = &pyro::bsp_uart::get_uart1();
+    
     // 注册回调
     self_control_uart->add_rx_event_callback(self_control_callback, 0xA501);
     //显式开启 DMA 接收

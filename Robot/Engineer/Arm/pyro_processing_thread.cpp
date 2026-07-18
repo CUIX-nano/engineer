@@ -109,6 +109,17 @@ extern "C" void pyro_processing_thread(void *argument) {
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
+    // ========== 初始化 DataBoard 到安全状态 ==========
+    pyro::genenral_data_t mode_data;
+    mode_data.data_ui = 0;   // PYRO_ARM_MODE_IDLE
+    global_databoard.write_topic(ctrl_mode_id, mode_data);
+
+    pyro::genenral_data_t zero_data;
+    zero_data.data_f = ZERO_FORCE_FLAG;
+    for (int i = 0; i < 6; i++) {
+        global_databoard.write_topic(cmd_joint_id[i], zero_data);
+    }
+    global_databoard.write_topic(cmd_gripper_id, zero_data);
 
     // 本地缓存变量
     uint32_t mode;

@@ -4,7 +4,12 @@
  * @note global_databoard 是实例，使用 . 操作符
  * @note vx, vy, wz 为 FLOAT 类型
  */
-
+#ifndef DR16_UART
+#define DR16_UART PYRO_UART5
+#endif
+#ifndef VT03_UART
+#define VT03_UART PYRO_UART1
+#endif
 #include "FreeRTOS.h"
 #include "task.h"
 #include "pyro_databoard.h"
@@ -12,6 +17,9 @@
 #include "pyro_vt03_rc_drv.h"
 #include "pyro_rc_core.h"   // sw_pos_t
 #include "pyro_rw_lock.h"       // read_scope_lock
+
+// 确保 DR16_UART 宏被定义，以便 instance() 方法可见
+
 
 extern pyro::databoard global_databoard;
 

@@ -83,6 +83,7 @@ void globaldataboard_init()
 extern "C"
 {
     ins_drv_t *ins_drv;
+    
 
     void pyro_init_thread(void *argument)
     {
@@ -106,7 +107,7 @@ extern "C"
         // ins_cfg.gz_offset = 0.0f;
         // ins_cfg.g_norm = 9.80665f;
         // ins_drv->init(ins_cfg);
-
+        pyro::bsp_uart::init_all();
 #ifdef DR16_UART
         dr16_drv_t::instance().start();
         dr16_drv_t::instance().enable();
@@ -182,7 +183,7 @@ extern "C"
 
         // 创建 DataBoard 话题（现在在同一个 namespace 内，可直接调用）
         globaldataboard_init();
-        upper_com_init(&global_databoard);
+        //upper_com_init(&global_databoard);
         //vTaskDelete(nullptr);
     }
 }
