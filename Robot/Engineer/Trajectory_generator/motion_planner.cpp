@@ -9,268 +9,281 @@
 
 namespace motion {
 
-// -------------------- 构造函数与重置 --------------------
-Action::Action()
-    : numSegments_(0),
-      numGripperEvents_(0),
-      totalDuration_(0.0),
-      isValid_(false) {
-    reset();
-}
-
-void Action::reset() {
-    numSegments_ = 0;
-    numGripperEvents_ = 0;
-    totalDuration_ = 0.0;
-    isValid_ = false;
-    // 安全清空内存（可选）
-    std::memset(segments_, 0, sizeof(segments_));
-    std::memset(gripperEvents_, 0, sizeof(gripperEvents_));
-}
-
-// -------------------- 核心算法：五次多项式系数计算 --------------------
-bool Action::computeSegmentCoeffs(const Pose& p0, const Pose& p1, double coeffs[NUM_JOINTS][6]) const {
-    double T = p1.time - p0.time;
-    if (T <= 0.0) {
-        return false; // 时间必须严格递增
+    // -------------------- 构造函数与重置 --------------------
+    Action::Action()
+        : numSegments_(0),
+        numGripperEvents_(0),
+        numCheckpoints_(0),
+        totalDuration_(0.0),
+        isValid_(false) {
+        reset();
     }
 
-    for (size_t j = 0; j < NUM_JOINTS; ++j) {
-        double q0 = p0.joints[j];
-        double v0 = p0.vel[j];
-        double a0 = p0.acc[j];
-        double q1 = p1.joints[j];
-        double v1 = p1.vel[j];
-        double a1 = p1.acc[j];
-
-        double T2 = T * T;
-        double T3 = T2 * T;
-        double T4 = T3 * T;
-        double T5 = T4 * T;
-
-        // 标准五次多项式系数（基于 t=0 到 T 的绝对时间）
-        // q(t) = a5*t^5 + a4*t^4 + a3*t^3 + a2*t^2 + a1*t + a0
-        // 边界条件：位置、速度、加速度在起点和终点匹配
-        double a0_coeff = q0;
-        double a1_coeff = v0;
-        double a2_coeff = 0.5 * a0;
-
-        double delta_q = q1 - q0;
-        double tmp1 = (8.0 * v1 + 12.0 * v0) * T;
-        double tmp2 = (3.0 * a0 - a1) * T2;
-        double a3_coeff = (20.0 * delta_q - tmp1 - tmp2) / (2.0 * T3);
-
-        double tmp3 = (14.0 * v1 + 16.0 * v0) * T;
-        double tmp4 = (3.0 * a0 - 2.0 * a1) * T2;
-        double a4_coeff = (-30.0 * delta_q + tmp3 + tmp4) / (2.0 * T4);
-
-        double tmp5 = (6.0 * v1 + 6.0 * v0) * T;
-        double tmp6 = (a0 - a1) * T2;
-        double a5_coeff = (12.0 * delta_q - tmp5 - tmp6) / (2.0 * T5);
-
-        // 存储 [a5, a4, a3, a2, a1, a0]（按从高次到低次，方便霍纳法则）
-        coeffs[j][0] = a5_coeff;
-        coeffs[j][1] = a4_coeff;
-        coeffs[j][2] = a3_coeff;
-        coeffs[j][3] = a2_coeff;
-        coeffs[j][4] = a1_coeff;
-        coeffs[j][5] = a0_coeff;
-    }
-    return true;
-}
-
-// -------------------- 注册方法一：从 Pose 列表自动计算 --------------------
-bool Action::registerFromPoses(const Pose* poses, size_t count) {
-    if (!poses || count < 2) {
-        return false;
-    }
-    if (count - 1 > MAX_SEGMENTS) {
-        return false; // 超出最大分段数
+    void Action::reset() {
+        numSegments_ = 0;
+        numGripperEvents_ = 0;
+        numCheckpoints_ = 0;
+        totalDuration_ = 0.0;
+        isValid_ = false;
+        std::memset(segments_, 0, sizeof(segments_));
+        std::memset(gripperEvents_, 0, sizeof(gripperEvents_));
+        std::memset(checkpoints_, 0, sizeof(checkpoints_));
     }
 
-    reset();
-
-    // 1. 确保第一个 Pose 时间必须为 0（若不为0，外部需自行处理偏移）
-    if (poses[0].time != 0.0) {
-        // 此处可放宽为允许非零，但建议外部统一做归一化。为严格起见，这里返回失败。
-        // 若需要支持偏移，可做内部时间平移，但这里按规范要求首个为0，故直接校验。
-        return false;
-    }
-
-    // 2. 遍历计算每一段的系数
-    for (size_t i = 0; i < count - 1; ++i) {
-        const Pose& p0 = poses[i];
-        const Pose& p1 = poses[i + 1];
-
-        // 校验时间严格递增
-        if (p1.time <= p0.time) {
-            reset();
+    // -------------------- 核心算法：五次多项式系数计算 --------------------
+    bool Action::computeSegmentCoeffs(const Pose& p0, const Pose& p1, double coeffs[NUM_JOINTS][6]) const {
+        double T = p1.time - p0.time;
+        if (T <= 0.0) {
             return false;
         }
 
-        CoeffSegment& seg = segments_[numSegments_];
-        seg.startTime = p0.time;
-        seg.duration = p1.time - p0.time;
+        for (size_t j = 0; j < NUM_JOINTS; ++j) {
+            double q0 = p0.joints[j];
+            double v0 = p0.vel[j];
+            double a0 = p0.acc[j];
+            double q1 = p1.joints[j];
+            double v1 = p1.vel[j];
+            double a1 = p1.acc[j];
 
-        if (!computeSegmentCoeffs(p0, p1, seg.coeffs)) {
-            reset();
+            double T2 = T * T;
+            double T3 = T2 * T;
+            double T4 = T3 * T;
+            double T5 = T4 * T;
+
+            double a0_coeff = q0;
+            double a1_coeff = v0;
+            double a2_coeff = 0.5 * a0;
+
+            double delta_q = q1 - q0;
+            double tmp1 = (8.0 * v1 + 12.0 * v0) * T;
+            double tmp2 = (3.0 * a0 - a1) * T2;
+            double a3_coeff = (20.0 * delta_q - tmp1 - tmp2) / (2.0 * T3);
+
+            double tmp3 = (14.0 * v1 + 16.0 * v0) * T;
+            double tmp4 = (3.0 * a0 - 2.0 * a1) * T2;
+            double a4_coeff = (-30.0 * delta_q + tmp3 + tmp4) / (2.0 * T4);
+
+            double tmp5 = (6.0 * v1 + 6.0 * v0) * T;
+            double tmp6 = (a0 - a1) * T2;
+            double a5_coeff = (12.0 * delta_q - tmp5 - tmp6) / (2.0 * T5);
+
+            coeffs[j][0] = a5_coeff;
+            coeffs[j][1] = a4_coeff;
+            coeffs[j][2] = a3_coeff;
+            coeffs[j][3] = a2_coeff;
+            coeffs[j][4] = a1_coeff;
+            coeffs[j][5] = a0_coeff;
+        }
+        return true;
+    }
+
+    // -------------------- 注册方法一：从 Pose 列表自动计算 --------------------
+    bool Action::registerFromPoses(const Pose* poses, size_t count) {
+        if (!poses || count < 2) {
             return false;
         }
-        numSegments_++;
-
-        // 3. 记录夹爪阶跃事件（仅在值发生变化时记录，节省内存）
-        if (numGripperEvents_ == 0 || 
-            gripperEvents_[numGripperEvents_ - 1].value != p1.gripper) {
-            gripperEvents_[numGripperEvents_].time = p1.time;
-            gripperEvents_[numGripperEvents_].value = p1.gripper;
-            numGripperEvents_++;
-        }
-    }
-
-    // 补上第一个时刻的夹爪值（如果没有任何事件，至少保证 t=0 时有值）
-    if (numGripperEvents_ == 0) {
-        gripperEvents_[0].time = 0.0;
-        gripperEvents_[0].value = poses[0].gripper;
-        numGripperEvents_ = 1;
-    }
-
-    totalDuration_ = poses[count - 1].time;
-    isValid_ = true;
-    return true;
-}
-
-// -------------------- 注册方法二：直接注入系数（外部计算） --------------------
-bool Action::registerFromCoeffs(const CoeffSegment* segments, size_t segCount,
-                                const GripperEvent* events, size_t evtCount) {
-    if (!segments || segCount == 0 || segCount > MAX_SEGMENTS) {
-        return false;
-    }
-    if (events && evtCount > MAX_SEGMENTS) {
-        return false;
-    }
-
-    reset();
-
-    // 复制分段数据
-    std::memcpy(segments_, segments, sizeof(CoeffSegment) * segCount);
-    numSegments_ = segCount;
-
-    // 复制夹爪事件
-    if (events && evtCount > 0) {
-        std::memcpy(gripperEvents_, events, sizeof(GripperEvent) * evtCount);
-        numGripperEvents_ = evtCount;
-    } else {
-        // 若无事件，构建一个默认事件（t=0, value=0）
-        gripperEvents_[0].time = 0.0;
-        gripperEvents_[0].value = 0.0;
-        numGripperEvents_ = 1;
-    }
-
-    // 计算总时长
-    totalDuration_ = segments_[segCount - 1].startTime + segments_[segCount - 1].duration;
-
-    // 简单校验：时间是否递增
-    for (size_t i = 1; i < segCount; ++i) {
-        if (segments_[i].startTime <= segments_[i - 1].startTime) {
-            reset();
+        if (count - 1 > MAX_SEGMENTS) {
             return false;
         }
-    }
 
-    isValid_ = true;
-    return true;
-}
+        reset();
 
-// -------------------- 运行时查询：二分查找分段索引 --------------------
-int Action::findSegmentIndex(double time) const {
-    if (numSegments_ == 0) return -1;
-
-    int low = 0, high = static_cast<int>(numSegments_) - 1;
-    int idx = 0;
-
-    while (low <= high) {
-        int mid = (low + high) / 2;
-        if (segments_[mid].startTime <= time) {
-            idx = mid;
-            low = mid + 1;
-        } else {
-            high = mid - 1;
+        // 1. 确保第一个 Pose 时间必须为 0
+        if (poses[0].time != 0.0) {
+            return false;
         }
-    }
 
-    // 如果 time 超出范围，修正到最近的有效段
-    if (time > totalDuration_) {
-        return static_cast<int>(numSegments_) - 1;
-    }
-    if (time < 0.0) {
-        return 0;
-    }
-    return idx;
-}
+        // 2. 遍历计算每一段的系数，同时记录校验点
+        for (size_t i = 0; i < count - 1; ++i) {
+            const Pose& p0 = poses[i];
+            const Pose& p1 = poses[i + 1];
 
-// -------------------- 运行时查询：二分查找夹爪事件索引 --------------------
-int Action::findGripperEventIndex(double time) const {
-    if (numGripperEvents_ == 0) return -1;
+            if (p1.time <= p0.time) {
+                reset();
+                return false;
+            }
 
-    int low = 0, high = static_cast<int>(numGripperEvents_) - 1;
-    int idx = 0;
+            CoeffSegment& seg = segments_[numSegments_];
+            seg.startTime = p0.time;
+            seg.duration = p1.time - p0.time;
 
-    while (low <= high) {
-        int mid = (low + high) / 2;
-        if (gripperEvents_[mid].time <= time) {
-            idx = mid;
-            low = mid + 1;
-        } else {
-            high = mid - 1;
+            if (!computeSegmentCoeffs(p0, p1, seg.coeffs)) {
+                reset();
+                return false;
+            }
+            numSegments_++;
+
+            // 记录夹爪阶跃事件
+            if (numGripperEvents_ == 0 ||
+                gripperEvents_[numGripperEvents_ - 1].value != p1.gripper) {
+                gripperEvents_[numGripperEvents_].time = p1.time;
+                gripperEvents_[numGripperEvents_].value = p1.gripper;
+                numGripperEvents_++;
+            }
         }
+
+        // 补上第一个夹爪值
+        if (numGripperEvents_ == 0) {
+            gripperEvents_[0].time = 0.0;
+            gripperEvents_[0].value = poses[0].gripper;
+            numGripperEvents_ = 1;
+        }
+
+        // 提取校验点（从第二个 Pose 开始，因为起点通常不需要校验）
+        numCheckpoints_ = 0;
+        for (size_t i = 1; i < count; ++i) {
+            if (poses[i].tolerance >= 0.0f) {
+                if (numCheckpoints_ < MAX_SEGMENTS) {
+                    checkpoints_[numCheckpoints_].time = poses[i].time;
+                    checkpoints_[numCheckpoints_].tolerance = poses[i].tolerance;
+                    numCheckpoints_++;
+                }
+            }
+        }
+
+        totalDuration_ = poses[count - 1].time;
+        isValid_ = true;
+        return true;
     }
 
-    // 防止越界
-    if (idx >= static_cast<int>(numGripperEvents_)) idx = numGripperEvents_ - 1;
-    if (idx < 0) idx = 0;
-    return idx;
-}
+    // -------------------- 注册方法二：直接注入系数（外部计算） --------------------
+    bool Action::registerFromCoeffs(const CoeffSegment* segments, size_t segCount,
+        const GripperEvent* events, size_t evtCount) {
+        if (!segments || segCount == 0 || segCount > MAX_SEGMENTS) {
+            return false;
+        }
+        if (events && evtCount > MAX_SEGMENTS) {
+            return false;
+        }
 
-// -------------------- 核心接口：获取目标值 --------------------
-bool Action::getTarget(double time, double* joints_out, double* gripper_out) const {
-    if (!isValid_ || !joints_out || !gripper_out) {
-        return false;
+        reset();
+
+        std::memcpy(segments_, segments, sizeof(CoeffSegment) * segCount);
+        numSegments_ = segCount;
+
+        if (events && evtCount > 0) {
+            std::memcpy(gripperEvents_, events, sizeof(GripperEvent) * evtCount);
+            numGripperEvents_ = evtCount;
+        }
+        else {
+            gripperEvents_[0].time = 0.0;
+            gripperEvents_[0].value = 0.0;
+            numGripperEvents_ = 1;
+        }
+
+        // 外部注入时不提供校验点（因为系数表中没有校验信息）
+        numCheckpoints_ = 0;
+        // 但也可以选择允许用户传入校验点列表，此处暂不处理
+
+        totalDuration_ = segments_[segCount - 1].startTime + segments_[segCount - 1].duration;
+
+        for (size_t i = 1; i < segCount; ++i) {
+            if (segments_[i].startTime <= segments_[i - 1].startTime) {
+                reset();
+                return false;
+            }
+        }
+
+        isValid_ = true;
+        return true;
     }
 
-    // 边界裁剪（防止超出范围）
-    if (time < 0.0) time = 0.0;
-    if (time > totalDuration_) time = totalDuration_;
-
-    // 1. 查找分段
-    int segIdx = findSegmentIndex(time);
-    if (segIdx < 0 || segIdx >= static_cast<int>(numSegments_)) {
-        return false;
+    // -------------------- 获取校验点列表 --------------------
+    size_t Action::getCheckpoints(Checkpoint* out, size_t max_count) const {
+        if (!out || max_count == 0) return 0;
+        size_t cnt = (numCheckpoints_ < max_count) ? numCheckpoints_ : max_count;
+        for (size_t i = 0; i < cnt; ++i) {
+            out[i] = checkpoints_[i];
+        }
+        return cnt;
     }
 
-    const CoeffSegment& seg = segments_[segIdx];
-    double tau = time - seg.startTime;  // 局部时间 (0 ~ duration)
+    // -------------------- 运行时查询：二分查找分段索引 --------------------
+    int Action::findSegmentIndex(double time) const {
+        if (numSegments_ == 0) return -1;
 
-    // 2. 用霍纳法则 (Horner's Method) 快速计算 6 个关节
-    for (size_t j = 0; j < NUM_JOINTS; ++j) {
-        const double* c = seg.coeffs[j];  // [a5, a4, a3, a2, a1, a0]
-        // q = ((((a5*tau + a4)*tau + a3)*tau + a2)*tau + a1)*tau + a0
-        double val = c[0] * tau + c[1];
-        val = val * tau + c[2];
-        val = val * tau + c[3];
-        val = val * tau + c[4];
-        val = val * tau + c[5];
-        joints_out[j] = val;
+        int low = 0, high = static_cast<int>(numSegments_) - 1;
+        int idx = 0;
+
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (segments_[mid].startTime <= time) {
+                idx = mid;
+                low = mid + 1;
+            }
+            else {
+                high = mid - 1;
+            }
+        }
+
+        if (time > totalDuration_) {
+            return static_cast<int>(numSegments_) - 1;
+        }
+        if (time < 0.0) {
+            return 0;
+        }
+        return idx;
     }
 
-    // 3. 夹爪查表（阶跃，不插值）
-    int evtIdx = findGripperEventIndex(time);
-    if (evtIdx >= 0 && evtIdx < static_cast<int>(numGripperEvents_)) {
-        *gripper_out = gripperEvents_[evtIdx].value;
-    } else {
-        *gripper_out = 0.0; // fallback
+    // -------------------- 运行时查询：二分查找夹爪事件索引 --------------------
+    int Action::findGripperEventIndex(double time) const {
+        if (numGripperEvents_ == 0) return -1;
+
+        int low = 0, high = static_cast<int>(numGripperEvents_) - 1;
+        int idx = 0;
+
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (gripperEvents_[mid].time <= time) {
+                idx = mid;
+                low = mid + 1;
+            }
+            else {
+                high = mid - 1;
+            }
+        }
+
+        if (idx >= static_cast<int>(numGripperEvents_)) idx = numGripperEvents_ - 1;
+        if (idx < 0) idx = 0;
+        return idx;
     }
 
-    return true;
-}
+    // -------------------- 核心接口：获取目标值 --------------------
+    bool Action::getTarget(double time, double* joints_out, double* gripper_out) const {
+        if (!isValid_ || !joints_out || !gripper_out) {
+            return false;
+        }
+
+        if (time < 0.0) time = 0.0;
+        if (time > totalDuration_) time = totalDuration_;
+
+        int segIdx = findSegmentIndex(time);
+        if (segIdx < 0 || segIdx >= static_cast<int>(numSegments_)) {
+            return false;
+        }
+
+        const CoeffSegment& seg = segments_[segIdx];
+        double tau = time - seg.startTime;
+
+        for (size_t j = 0; j < NUM_JOINTS; ++j) {
+            const double* c = seg.coeffs[j];
+            double val = c[0] * tau + c[1];
+            val = val * tau + c[2];
+            val = val * tau + c[3];
+            val = val * tau + c[4];
+            val = val * tau + c[5];
+            joints_out[j] = val;
+        }
+
+        int evtIdx = findGripperEventIndex(time);
+        if (evtIdx >= 0 && evtIdx < static_cast<int>(numGripperEvents_)) {
+            *gripper_out = gripperEvents_[evtIdx].value;
+        }
+        else {
+            *gripper_out = 0.0;
+        }
+
+        return true;
+    }
 
 } // namespace motion

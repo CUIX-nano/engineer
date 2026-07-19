@@ -5,7 +5,7 @@
 
 extern "C" void engineer_arm_mission(void* args);
 extern pyro::databoard global_databoard;
-uint32_t control_mode;
+PYRO_ArmControlMode_t control_mode = PYRO_ARM_MODE_JOINT_DIRECT;
 
 namespace pyro
 {
@@ -17,13 +17,12 @@ float motor_current_torque[7];
 float axis_target_pos[7];
 uint32_t axis_current_pos_id[7];
 uint32_t axis_target_pos_id[7];
-uint32_t control_mode_id;
 
 Axis_control_t::Axis_control_t(motor_base_t *motor, pid_t *pos_pid, pid_t *rot_pid) : _motor(motor), _pos_pid(pos_pid), _rot_pid(rot_pid)
 {
     _target_position = 0.0f;
     _target_rotate   = 0.0f;
-    axis_limit      = NO_CONSTRAINT;
+    axis_limit      = CONSTRAINT;
 }
 Axis_control_t::~Axis_control_t(){}
 
@@ -90,7 +89,7 @@ void Axis_control_t::pid_control()
 }
 
 dm_motor_drv_t *axis_motor[6] = {
-    new dm_motor_drv_t(0x1, 0x0, bsp_can::can1),
+    new dm_motor_drv_t(0x11, 0x10, bsp_can::can1),
     new dm_motor_drv_t(0x4, 0x3, bsp_can::can1),
     new dm_motor_drv_t(0x6, 0x5, bsp_can::can3),
     new dm_motor_drv_t(0x8, 0x7, bsp_can::can3),
@@ -100,7 +99,7 @@ dm_motor_drv_t *axis_motor[6] = {
 dm_motor_drv_t *end_motor = new dm_motor_drv_t(0xe, 0xd, bsp_can::can2);
 
 pid_t *axis_pos_pid[6] = {
-    new pid_t(10,0.0,0.0,0.0,52),
+    new pid_t(3,0.0,0.0,0.0,52),
     new pid_t(20,0,0.0,20.0,150),
     new pid_t(15,0.0,0.0,0.0,160),
     new pid_t(15.7,0,0.0,6,200),
@@ -108,7 +107,7 @@ pid_t *axis_pos_pid[6] = {
     new pid_t(9,0.0,0.0,0.0,200)
 };
 pid_t *axis_rot_pid[6] = {
-    new pid_t(8.8,0.0,0.0,0.0,27),
+    new pid_t(1,0.0,0.0,0.0,27),
     new pid_t(20,0,0.0,20.0,150),
     new pid_t(11,0.2,0.0,5.0,40),
     new pid_t(1.0,0.2,0.001,3,7),
@@ -169,7 +168,6 @@ void engineer_arm_update()
         motor_current_rot[i] = axis_motor[i]->get_current_rotate();
         motor_current_torque[i] = axis_motor[i]->get_current_torque();
     }
-    // 注意：axis_current_pos[6] 是夹爪位置，此处未更新，但预留了写入
     global_databoard.write_topic(axis_current_pos_id[0],
             *((pyro::genenral_data_t*)&(axis_current_pos[0])));
     global_databoard.write_topic(axis_current_pos_id[1],
@@ -193,10 +191,9 @@ void engineer_arm_update()
     //释放锁
 }
 
-// ==================== 修正所有 read 调用 ====================
 void engineer_arm_set_target()
 {
-    TickType_t timestamp;   // 定义有效的时间戳变量
+    static TickType_t timestamp;
     global_databoard.read(axis_target_pos_id[0], (pyro::genenral_data_t*)&(axis_target_pos[0]), timestamp);
     global_databoard.read(axis_target_pos_id[1], (pyro::genenral_data_t*)&(axis_target_pos[1]), timestamp);
     global_databoard.read(axis_target_pos_id[2], (pyro::genenral_data_t*)&(axis_target_pos[2]), timestamp);
@@ -204,6 +201,19 @@ void engineer_arm_set_target()
     global_databoard.read(axis_target_pos_id[4], (pyro::genenral_data_t*)&(axis_target_pos[4]), timestamp);
     global_databoard.read(axis_target_pos_id[5], (pyro::genenral_data_t*)&(axis_target_pos[5]), timestamp);
     global_databoard.read(axis_target_pos_id[6], (pyro::genenral_data_t*)&(axis_target_pos[6]), timestamp);
+
+    for(int i=0; i<6; i++)
+    {
+        if(fabs(axis_target_pos[i])>=64)  
+        {
+            control_mode = PYRO_ARM_MODE_IDLE;
+            return;
+        }
+        else{
+            control_mode = PYRO_ARM_MODE_JOINT_DIRECT;
+            axis_control[i]->set_target(axis_target_pos[i]);
+        }
+    }
 }
 
 void arm_control()
@@ -232,8 +242,6 @@ float torque_range[6][2]   = {{-27, 27}, {-150, 150}, {-40, 40}, {-7, 7}, {-7, 7
 extern "C" void engineer_arm_init(void* args)
 {
     osDelay(10);
-
-    pyro::control_mode_id = global_databoard.get_topic_id("arm_ctrl_mode");
 
     pyro::arm_control_init(position_range, rotate_range, torque_range);
 
@@ -280,31 +288,19 @@ extern "C" void engineer_arm_init(void* args)
 
 extern "C" void engineer_arm_mission(void* args)
 {
-    TickType_t timestamp;   // 定义时间戳变量
-    pyro::genenral_data_t data; // 临时数据容器
-    pyro::topic::data_status_t status;
-
     for(;;)
     {
-        // 读取控制模式
-        status = global_databoard.read(pyro::control_mode_id, &data, timestamp);
-        if (status == pyro::topic::DATA_OK) {
-            control_mode = data.data_ui;
-        } else {
-            // 读取失败，保持上一次值或默认值
-            control_mode = PYRO_ARM_MODE_IDLE; // 例如默认空闲
-        }
-
         pyro::engineer_arm_update();
         pyro::engineer_arm_set_target();
-        // if(control_mode==PYRO_ARM_MODE_IDLE)
-        // {
-        //     pyro::engineer_arm_zeroforce();
-        // }
-        // else if(control_mode==PYRO_ARM_MODE_JOINT_DIRECT)
-        // {
+        if(control_mode==PYRO_ARM_MODE_IDLE)
+        {
             pyro::engineer_arm_zeroforce();
-        // }
+        }
+        else if(control_mode==PYRO_ARM_MODE_JOINT_DIRECT)
+        {
+            pyro::arm_control();
+        }
         vTaskDelay(1);
     }
+
 }

@@ -40,6 +40,7 @@ set(ARM_EXTRA_SOURCES
         Arm/self_control_command.cpp
         Trajectory_generator/motion_planner.cpp
         Trajectory_generator/virtual_controller.cpp
+        Trajectory_generator/action_register.cpp
 )
 
 # ===================== CHASSIS_BOARD 扩展源文件 =====================

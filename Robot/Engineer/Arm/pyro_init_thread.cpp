@@ -12,6 +12,7 @@
 #include "pyro_us100_drv.h"
 #include "pyro_vt03_rc_drv.h"
 #include "pyro_databoard.h"
+#include "action_register.h"
 pyro::databoard global_databoard;   // 定义全局 DataBoard 对象
 namespace pyro
 {
@@ -78,6 +79,20 @@ void globaldataboard_init()
     global_databoard.create_topic("axis5_self_command", pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis6_self_command", pyro::data_type_t::FLOAT);
 
+
+    //一键操作控制器相关
+        // 一键操作输入（若尚未创建）
+        global_databoard.create_topic("arm_ctrl_tg1_start",     pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_ctrl_tg1_choose",    pyro::data_type_t::UNSIGNED_INT);
+
+        // 一键操作状态反馈
+        global_databoard.create_topic("arm_tg1_status",         pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_tg1_current_action", pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_tg1_progress",       pyro::data_type_t::FLOAT);
+        global_databoard.create_topic("arm_tg1_error_code",     pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_tg1_checkpoint_waiting", pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_tg1_current_time",   pyro::data_type_t::FLOAT);
+        global_databoard.create_topic("arm_tg1_total_time",     pyro::data_type_t::FLOAT);
 }
 
 extern "C"
@@ -183,6 +198,7 @@ extern "C"
 
         // 创建 DataBoard 话题（现在在同一个 namespace 内，可直接调用）
         globaldataboard_init();
+        motion::initActionRegistry();
         //upper_com_init(&global_databoard);
         //vTaskDelete(nullptr);
     }

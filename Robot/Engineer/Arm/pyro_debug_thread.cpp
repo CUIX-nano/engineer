@@ -55,7 +55,7 @@ static void cuij_cmd_read(const char* topic_name) {
     uint32_t id = global_databoard.get_topic_id(topic_name);
     if (id == 0xFFFFFFFF) {
         cuij_send("Topic not found.\n");
-        return;
+        return; 
     }
     pyro::genenral_data_t data;
     TickType_t timestamp;

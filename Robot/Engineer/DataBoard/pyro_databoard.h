@@ -53,7 +53,7 @@ namespace pyro
 
     class databoard
     {
-        const static uint8_t DATABOARD_CHANNEL_COUNT = 48;
+        const static uint8_t DATABOARD_CHANNEL_COUNT = 96;
         public:
             databoard();
             ~databoard();
